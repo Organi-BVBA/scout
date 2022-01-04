@@ -51,27 +51,42 @@ class MeiliSearchEngine extends Engine
             return;
         }
 
-        $index = $this->meilisearch->index($models->first()->searchableAs());
 
         if ($this->usesSoftDelete($models->first()) && $this->softDelete) {
             $models->each->pushSoftDeleteMetadata();
         }
 
-        $objects = $models->map(function ($model) {
-            if (empty($searchableData = $model->toSearchableArray())) {
-                return;
+        $models = $models->mapToGroups(function ($model) {
+            // The index the item needs to be pushed to
+            $index = $model->searchableAs();
+
+            return [$index => $model];
+        });
+
+        // All models are grouped by index now.
+        // Loop over the different indexes and push them to the search engine
+        $models->each(function ($items, $index) {
+            $objects = $items->map(function ($model) {
+                if (empty($searchableData = $model->toSearchableArray())) {
+                    return;
+                }
+
+
+                // The data that needs to be pushed to Meili
+                return  array_merge(
+                    [$model->getKeyName() => $model->getScoutKey()],
+                    $searchableData,
+                    $model->scoutMetadata()
+                );
+            })->filter()->values()->all();
+
+            if (! empty($items)) {
+                // Generate index object from the name
+                $index = $this->meilisearch->index($index);
+
+                $index->addDocuments($objects, $items->first()->getKeyName());
             }
-
-            return array_merge(
-                [$model->getKeyName() => $model->getScoutKey()],
-                $searchableData,
-                $model->scoutMetadata()
-            );
-        })->filter()->values()->all();
-
-        if (! empty($objects)) {
-            $index->addDocuments($objects, $models->first()->getKeyName());
-        }
+        });
     }
 
     /**
