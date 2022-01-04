@@ -16,22 +16,18 @@ trait Searchable
 
     /**
      * Boot the trait.
-     *
-     * @return void
      */
     public static function bootSearchable()
     {
-        static::addGlobalScope(new SearchableScope);
+        static::addGlobalScope(new SearchableScope());
 
-        static::observe(new ModelObserver);
+        static::observe(new ModelObserver());
 
-        (new static)->registerSearchableMacros();
+        (new static())->registerSearchableMacros();
     }
 
     /**
      * Register the searchable macros.
-     *
-     * @return void
      */
     public function registerSearchableMacros()
     {
@@ -50,7 +46,6 @@ trait Searchable
      * Dispatch the job to make the given models searchable.
      *
      * @param  \Illuminate\Database\Eloquent\Collection  $models
-     * @return void
      */
     public function queueMakeSearchable($models)
     {
@@ -63,15 +58,14 @@ trait Searchable
         }
 
         dispatch((new Scout::$makeSearchableJob($models))
-                ->onQueue($models->first()->syncWithSearchUsingQueue())
-                ->onConnection($models->first()->syncWithSearchUsing()));
+            ->onQueue($models->first()->syncWithSearchUsingQueue())
+            ->onConnection($models->first()->syncWithSearchUsing()));
     }
 
     /**
      * Dispatch the job to make the given models unsearchable.
      *
      * @param  \Illuminate\Database\Eloquent\Collection  $models
-     * @return void
      */
     public function queueRemoveFromSearch($models)
     {
@@ -113,15 +107,16 @@ trait Searchable
      *
      * @param  string  $query
      * @param  \Closure  $callback
+     *
      * @return \Laravel\Scout\Builder
      */
     public static function search($query = '', $callback = null)
     {
         return app(Builder::class, [
-            'model' => new static,
-            'query' => $query,
-            'callback' => $callback,
-            'softDelete'=> static::usesSoftDelete() && config('scout.soft_delete', false),
+            'model'      => new static(),
+            'query'      => $query,
+            'callback'   => $callback,
+            'softDelete' => static::usesSoftDelete() && config('scout.soft_delete', false),
         ]);
     }
 
@@ -129,11 +124,10 @@ trait Searchable
      * Make all instances of the model searchable.
      *
      * @param  int  $chunk
-     * @return void
      */
     public static function makeAllSearchable($chunk = null)
     {
-        $self = new static;
+        $self = new static();
 
         $softDelete = static::usesSoftDelete() && config('scout.soft_delete', false);
 
@@ -149,20 +143,7 @@ trait Searchable
     }
 
     /**
-     * Modify the query used to retrieve models when making all of the models searchable.
-     *
-     * @param  \Illuminate\Database\Eloquent\Builder  $query
-     * @return \Illuminate\Database\Eloquent\Builder
-     */
-    protected function makeAllSearchableUsing($query)
-    {
-        return $query;
-    }
-
-    /**
      * Make the given model instance searchable.
-     *
-     * @return void
      */
     public function searchable()
     {
@@ -171,20 +152,16 @@ trait Searchable
 
     /**
      * Remove all instances of the model from the search index.
-     *
-     * @return void
      */
     public static function removeAllFromSearch()
     {
-        $self = new static;
+        $self = new static();
 
         $self->searchableUsing()->flush($self);
     }
 
     /**
      * Remove the given model instance from the search index.
-     *
-     * @return void
      */
     public function unsearchable()
     {
@@ -215,7 +192,7 @@ trait Searchable
      * Get the requested models from an array of object IDs.
      *
      * @param  \Laravel\Scout\Builder  $builder
-     * @param  array  $ids
+     *
      * @return mixed
      */
     public function getScoutModelsByIds(Builder $builder, array $ids)
@@ -227,7 +204,7 @@ trait Searchable
      * Get a query builder for retrieving the requested models from an array of object IDs.
      *
      * @param  \Laravel\Scout\Builder  $builder
-     * @param  array  $ids
+     *
      * @return mixed
      */
     public function queryScoutModelsByIds(Builder $builder, array $ids)
@@ -240,14 +217,13 @@ trait Searchable
         }
 
         return $query->whereIn(
-            $this->getScoutKeyName(), $ids
+            $this->getScoutKeyName(),
+            $ids
         );
     }
 
     /**
      * Enable search syncing for this model.
-     *
-     * @return void
      */
     public static function enableSearchSyncing()
     {
@@ -256,8 +232,6 @@ trait Searchable
 
     /**
      * Disable search syncing for this model.
-     *
-     * @return void
      */
     public static function disableSearchSyncing()
     {
@@ -268,6 +242,7 @@ trait Searchable
      * Temporarily disable search syncing for the given callback.
      *
      * @param  callable  $callback
+     *
      * @return mixed
      */
     public static function withoutSyncingToSearch($callback)
@@ -288,7 +263,7 @@ trait Searchable
      */
     public function searchableAs()
     {
-        return config('scout.prefix').$this->getTable();
+        return config('scout.prefix') . $this->getTable();
     }
 
     /**
@@ -356,6 +331,7 @@ trait Searchable
      *
      * @param  string  $key
      * @param  mixed  $value
+     *
      * @return $this
      */
     public function withScoutMetadata($key, $value)
@@ -383,6 +359,18 @@ trait Searchable
     public function getScoutKeyName()
     {
         return $this->getQualifiedKeyName();
+    }
+
+    /**
+     * Modify the query used to retrieve models when making all of the models searchable.
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     *
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    protected function makeAllSearchableUsing($query)
+    {
+        return $query;
     }
 
     /**

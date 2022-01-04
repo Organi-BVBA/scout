@@ -34,7 +34,7 @@ class ImportCommand extends Command
     {
         $class = $this->argument('model');
 
-        $model = new $class;
+        $model = new $class();
 
         $events->listen(ModelsImported::class, function ($event) use ($class) {
             $key = $event->models->last()->getScoutKey();
