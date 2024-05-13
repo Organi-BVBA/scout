@@ -122,7 +122,7 @@ trait Searchable
             'model' => new static,
             'query' => $query,
             'callback' => $callback,
-            'softDelete'=> static::usesSoftDelete() && config('scout.soft_delete', false),
+            'softDelete' => static::usesSoftDelete() && config('scout.soft_delete', false),
         ]);
     }
 
@@ -253,7 +253,7 @@ trait Searchable
             call_user_func($builder->queryCallback, $query);
         }
 
-        $whereIn = in_array($this->getKeyType(), ['int', 'integer']) ?
+        $whereIn = in_array($this->getScoutKeyType(), ['int', 'integer']) ?
             'whereIntegerInRaw' :
             'whereIn';
 
@@ -391,6 +391,16 @@ trait Searchable
     public function getScoutKey()
     {
         return $this->getKey();
+    }
+
+    /**
+     * Get the auto-incrementing key type for querying models.
+     *
+     * @return string
+     */
+    public function getScoutKeyType()
+    {
+        return $this->getKeyType();
     }
 
     /**

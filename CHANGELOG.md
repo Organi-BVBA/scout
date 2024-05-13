@@ -1,6 +1,74 @@
 # Release Notes
 
-## [Unreleased](https://github.com/laravel/scout/compare/v10.2.3...10.x)
+## [Unreleased](https://github.com/laravel/scout/compare/v10.9.0...10.x)
+
+## [v10.9.0](https://github.com/laravel/scout/compare/v10.8.6...v10.9.0) - 2024-05-07
+
+* Allow Typesense Search Parameter Definition on Models by [@stammbach](https://github.com/stammbach) in https://github.com/laravel/scout/pull/827
+* Fixing issue 825 by [@AbdullahFaqeir](https://github.com/AbdullahFaqeir) in https://github.com/laravel/scout/pull/826
+
+## [v10.8.6](https://github.com/laravel/scout/compare/v10.8.5...v10.8.6) - 2024-04-16
+
+* Prevent unnecessary api calls on Collection (index) by [@AbdullahFaqeir](https://github.com/AbdullahFaqeir) in https://github.com/laravel/scout/pull/820
+
+## [v10.8.5](https://github.com/laravel/scout/compare/v10.8.4...v10.8.5) - 2024-04-02
+
+* [Typesense] Issue when searching with queryCallback by [@karakhanyans](https://github.com/karakhanyans) in https://github.com/laravel/scout/pull/817
+
+## [v10.8.4](https://github.com/laravel/scout/compare/v10.8.3...v10.8.4) - 2024-03-26
+
+* Repaces when and tap functions with Conditionable and Tappable traits by [@ncharalampidis](https://github.com/ncharalampidis) in https://github.com/laravel/scout/pull/811
+* [10.x] Make commands lazy by [@timacdonald](https://github.com/timacdonald) in https://github.com/laravel/scout/pull/815
+* [10.x] Optional field definitions on model by [@MortenDHansen](https://github.com/MortenDHansen) in https://github.com/laravel/scout/pull/812
+
+## [v10.8.3](https://github.com/laravel/scout/compare/v10.8.2...v10.8.3) - 2024-02-13
+
+* [10.x] Fix zero integer value in options parameter for Typesense by [@alignwebs](https://github.com/alignwebs) in https://github.com/laravel/scout/pull/802
+
+## [v10.8.2](https://github.com/laravel/scout/compare/v10.8.1...v10.8.2) - 2024-01-30
+
+* [10.x] Ordering by model's custom `created_at` column by [@stevebauman](https://github.com/stevebauman) in https://github.com/laravel/scout/pull/801
+
+## [v10.8.1](https://github.com/laravel/scout/compare/v10.8.0...v10.8.1) - 2024-01-23
+
+* [10.x] Fix Typesense search parameters issue  by [@karakhanyans](https://github.com/karakhanyans) in https://github.com/laravel/scout/pull/795
+
+## [v10.8.0](https://github.com/laravel/scout/compare/v10.7.0...v10.8.0) - 2024-01-16
+
+* [10.x] Laravel v11 support by [@nunomaduro](https://github.com/nunomaduro) in https://github.com/laravel/scout/pull/789
+
+## [v10.7.0](https://github.com/laravel/scout/compare/v10.6.1...v10.7.0) - 2024-01-09
+
+* [10.x] Add Typesense engine by [@jasonbosco](https://github.com/jasonbosco) in https://github.com/laravel/scout/pull/773
+
+## [v10.6.1](https://github.com/laravel/scout/compare/v10.6.0...v10.6.1) - 2023-12-05
+
+* Fix unsearchable config by [@Casmo](https://github.com/Casmo) in https://github.com/laravel/scout/pull/783
+
+## [v10.6.0](https://github.com/laravel/scout/compare/v10.5.1...v10.6.0) - 2023-11-28
+
+* Add search engine meta data to results by [@tobz-nz](https://github.com/tobz-nz) in https://github.com/laravel/scout/pull/780
+
+## [v10.5.1](https://github.com/laravel/scout/compare/v10.5.0...v10.5.1) - 2023-10-31
+
+- Call makeSearchableUsing before searching on CollectionEngine by [@Magnesium38](https://github.com/Magnesium38) in https://github.com/laravel/scout/pull/777
+
+## [v10.5.0](https://github.com/laravel/scout/compare/v10.4.0...v10.5.0) - 2023-10-10
+
+- Adds latest and oldest sorting options by [@peterfox](https://github.com/peterfox) in https://github.com/laravel/scout/pull/770
+
+## [v10.4.0](https://github.com/laravel/scout/compare/v10.3.0...v10.4.0) - 2023-09-26
+
+- Allow configuration of Algolia batch size by [@samlev](https://github.com/samlev) in https://github.com/laravel/scout/pull/768
+  **Full Changelog**: https://github.com/laravel/scout/compare/v10.3.0...v10.4.0
+
+## [v10.3.0](https://github.com/laravel/scout/compare/v10.2.4...v10.3.0) - 2023-09-05
+
+- Add "whereNotIn" native support to Meilisearch, Database and Collection engines by [@guestpectacular](https://github.com/guestpectacular) in https://github.com/laravel/scout/pull/760
+
+## [v10.2.4](https://github.com/laravel/scout/compare/v10.2.3...v10.2.4) - 2023-08-08
+
+- Add Configurable Scout Key Type by [@geisi](https://github.com/geisi) in https://github.com/laravel/scout/pull/752
 
 ## [v10.2.3](https://github.com/laravel/scout/compare/v10.2.2...v10.2.3) - 2023-07-11
 
