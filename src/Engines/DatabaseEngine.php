@@ -92,7 +92,7 @@ class DatabaseEngine extends Engine implements PaginatesEloquentModelsUsingDatab
                 }
             })
             ->when(! $this->getFullTextColumns($builder), function ($query) use ($builder) {
-                $query->orderBy($builder->model->getKeyName(), 'desc');
+                $query->orderBy($builder->model->getTable().'.'.$builder->model->getScoutKeyName(), 'desc');
             })
             ->paginate($perPage, ['*'], $pageName, $page);
     }
@@ -127,7 +127,7 @@ class DatabaseEngine extends Engine implements PaginatesEloquentModelsUsingDatab
                 }
             })
             ->when(! $this->getFullTextColumns($builder), function ($query) use ($builder) {
-                $query->orderBy($builder->model->getKeyName(), 'desc');
+                $query->orderBy($builder->model->getTable().'.'.$builder->model->getScoutKeyName(), 'desc');
             })
             ->simplePaginate($perPage, ['*'], $pageName, $page);
     }
@@ -152,7 +152,7 @@ class DatabaseEngine extends Engine implements PaginatesEloquentModelsUsingDatab
                 }
             })
             ->when(! $this->getFullTextColumns($builder), function ($query) use ($builder) {
-                $query->orderBy($builder->model->getKeyName(), 'desc');
+                $query->orderBy($builder->model->getTable().'.'.$builder->model->getScoutKeyName(), 'desc');
             })
             ->get();
     }
@@ -188,17 +188,21 @@ class DatabaseEngine extends Engine implements PaginatesEloquentModelsUsingDatab
      */
     protected function initializeSearchQuery(Builder $builder, array $columns, array $prefixColumns = [], array $fullTextColumns = [])
     {
+        $query = method_exists($builder->model, 'newScoutQuery')
+            ? $builder->model->newScoutQuery($builder)
+            : $builder->model->newQuery();
+
         if (blank($builder->query)) {
-            return $builder->model->newQuery();
+            return $query;
         }
 
-        return $builder->model->newQuery()->where(function ($query) use ($builder, $columns, $prefixColumns, $fullTextColumns) {
+        return $query->where(function ($query) use ($builder, $columns, $prefixColumns, $fullTextColumns) {
             $connectionType = $builder->model->getConnection()->getDriverName();
 
             $canSearchPrimaryKey = ctype_digit($builder->query) &&
                                    in_array($builder->model->getKeyType(), ['int', 'integer']) &&
                                    ($connectionType != 'pgsql' || $builder->query <= PHP_INT_MAX) &&
-                                   in_array($builder->model->getKeyName(), $columns);
+                                   in_array($builder->model->getScoutKeyName(), $columns);
 
             if ($canSearchPrimaryKey) {
                 $query->orWhere($builder->model->getQualifiedKeyName(), $builder->query);
@@ -214,7 +218,7 @@ class DatabaseEngine extends Engine implements PaginatesEloquentModelsUsingDatab
                         $this->getFullTextOptions($builder)
                     );
                 } else {
-                    if ($canSearchPrimaryKey && $column === $builder->model->getKeyName()) {
+                    if ($canSearchPrimaryKey && $column === $builder->model->getScoutKeyName()) {
                         continue;
                     }
 

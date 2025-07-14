@@ -2,13 +2,14 @@
 
 namespace Laravel\Scout\Tests\Integration;
 
-use Illuminate\Support\Env;
-use Laravel\Scout\Tests\Fixtures\User;
+use Orchestra\Testbench\Attributes\RequiresEnv;
+use Workbench\App\Models\SearchableUser;
 
 /**
  * @group typesense
  * @group external-network
  */
+#[RequiresEnv('TYPESENSE_API_KEY')]
 class TypesenseSearchableTest extends TestCase
 {
     use SearchableTests;
@@ -21,10 +22,6 @@ class TypesenseSearchableTest extends TestCase
      */
     protected function defineEnvironment($app)
     {
-        if (is_null(Env::get('TYPESENSE_API_KEY'))) {
-            $this->markTestSkipped();
-        }
-
         $this->defineScoutEnvironment($app);
     }
 
@@ -45,7 +42,7 @@ class TypesenseSearchableTest extends TestCase
      */
     protected function afterRefreshingDatabase()
     {
-        $this->importScoutIndexFrom(User::class);
+        $this->importScoutIndexFrom(SearchableUser::class);
     }
 
     public function test_it_can_use_basic_search()
@@ -162,6 +159,83 @@ class TypesenseSearchableTest extends TestCase
             40 => 'Otis Larson MD',
             12 => 'Reta Larkin',
         ], $page2->pluck('name', 'id')->all());
+    }
+
+    public function test_it_can_usePaginatedSearchWithEmptyQueryCallback()
+    {
+        $res = $this->itCanUsePaginatedSearchWithEmptyQueryCallback();
+
+        $this->assertSame($res->total(), 44);
+        $this->assertSame($res->lastPage(), 3);
+    }
+
+    public function test_it_can_use_paginated_search_with_after_raw_search_callback()
+    {
+        $rawResults = $this->itCanAccessRawSearchResultsOfPaginateUsingAfterRawSearchCallback();
+
+        $this->assertIsArray($rawResults);
+        $this->assertArrayHasKey('hits', $rawResults);
+        $this->assertArrayHasKey('search_time_ms', $rawResults);
+    }
+
+    public function test_it_can_use_raw_paginated_search_with_after_raw_search_callback()
+    {
+        $rawResults = $this->itCanAccessRawSearchResultsOfPaginateRawUsingAfterRawSearchCallback();
+
+        $this->assertIsArray($rawResults);
+        $this->assertArrayHasKey('hits', $rawResults);
+        $this->assertArrayHasKey('search_time_ms', $rawResults);
+    }
+
+    public function test_it_can_use_simple_paginated_search_with_after_raw_search_callback()
+    {
+        $rawResults = $this->itCanAccessRawSearchResultsOfSimplePaginateUsingAfterRawSearchCallback();
+
+        $this->assertIsArray($rawResults);
+        $this->assertArrayHasKey('hits', $rawResults);
+        $this->assertArrayHasKey('search_time_ms', $rawResults);
+    }
+
+    public function test_it_can_use_raw_simple_paginated_search_with_after_raw_search_callback()
+    {
+        $rawResults = $this->itCanAccessRawSearchResultsOfSimplePaginateRawUsingAfterRawSearchCallback();
+
+        $this->assertIsArray($rawResults);
+        $this->assertArrayHasKey('hits', $rawResults);
+        $this->assertArrayHasKey('search_time_ms', $rawResults);
+    }
+
+    public function test_it_can_use_raw_get_search_with_after_raw_search_callback()
+    {
+        $rawResults = $this->itCanAccessRawSearchResultsOfGetUsingAfterRawSearchCallback();
+
+        $this->assertIsArray($rawResults);
+        $this->assertArrayHasKey('hits', $rawResults);
+        $this->assertArrayHasKey('search_time_ms', $rawResults);
+    }
+
+    public function test_it_can_use_raw_cursor_search_with_after_raw_search_callback()
+    {
+        $rawResults = $this->itCanAccessRawSearchResultsOfCursorUsingAfterRawSearchCallback();
+
+        $this->assertIsArray($rawResults);
+        $this->assertArrayHasKey('hits', $rawResults);
+        $this->assertArrayHasKey('search_time_ms', $rawResults);
+    }
+
+    public function test_it_handles_pagination_with_max_int_overflow()
+    {
+        $maxInt = 4294967295;
+        $perPage = 10;
+        $overflowPage = 4294967296; // max int + 1
+        $expectedPage = floor($maxInt / $perPage);
+
+        $results = SearchableUser::search('lar')
+            ->paginate($perPage, $overflowPage);
+
+        // Verify the page was adjusted correctly
+        $this->assertEquals($expectedPage, $results->currentPage());
+        $this->assertEquals($perPage, $results->perPage());
     }
 
     protected static function scoutDriver(): string

@@ -2,13 +2,21 @@
 
 namespace Laravel\Scout\Tests\Integration;
 
-use Illuminate\Support\Env;
-use Laravel\Scout\Tests\Fixtures\User;
+use Illuminate\Database\Eloquent\Collection;
+use Laravel\Scout\Builder;
+use Laravel\Scout\Engines\MeilisearchEngine;
+use Laravel\Scout\Tests\Fixtures\VersionableModel;
+use Meilisearch\Client;
+use Meilisearch\Endpoints\Indexes;
+use Mockery as m;
+use Orchestra\Testbench\Attributes\RequiresEnv;
+use Workbench\App\Models\SearchableUser;
 
 /**
  * @group meilisearch
  * @group external-network
  */
+#[RequiresEnv('MEILISEARCH_HOST')]
 class MeilisearchSearchableTest extends TestCase
 {
     use SearchableTests {
@@ -23,12 +31,6 @@ class MeilisearchSearchableTest extends TestCase
      */
     protected function defineEnvironment($app)
     {
-        if (is_null(Env::get('MEILISEARCH_HOST'))) {
-            $this->markTestSkipped();
-
-            return;
-        }
-
         $this->defineScoutEnvironment($app);
     }
 
@@ -46,7 +48,7 @@ class MeilisearchSearchableTest extends TestCase
     {
         $this->baseDefineScoutDatabaseMigrations();
 
-        $this->importScoutIndexFrom(User::class);
+        $this->importScoutIndexFrom(SearchableUser::class);
     }
 
     public function test_it_can_use_basic_search()
@@ -147,6 +149,24 @@ class MeilisearchSearchableTest extends TestCase
         ], $page2->pluck('name', 'id')->all());
     }
 
+    public function test_uses_different_indexes()
+    {
+        $client = m::mock(Client::class);
+        $client->shouldReceive('index')->with('table_v2')->andReturn($index = m::mock(Indexes::class));
+        $index->shouldReceive('deleteDocuments')->with([1]);
+
+        $engine = new MeilisearchEngine($client);
+        $engine->delete(Collection::make([new VersionableModel(['id' => 1])]));
+
+        $client = m::mock(Client::class);
+        $client->shouldReceive('index')->with('table')->once()->andReturn($index = m::mock(Indexes::class));
+        $index->shouldReceive('rawSearch')->once()->andReturn([]);
+
+        $engine = new MeilisearchEngine($client);
+        $builder = new Builder(new VersionableModel, '');
+        $engine->search($builder);
+    }
+
     public function test_it_can_use_paginated_search_with_query_callback()
     {
         [$page1, $page2] = $this->itCanUsePaginatedSearchWithQueryCallback();
@@ -163,6 +183,60 @@ class MeilisearchSearchableTest extends TestCase
             43 => 'Dana Larson Sr.',
             44 => 'Amos Larson Sr.',
         ], $page2->pluck('name', 'id')->all());
+    }
+
+    public function test_it_can_use_paginated_search_with_after_raw_search_callback()
+    {
+        $rawResults = $this->itCanAccessRawSearchResultsOfPaginateUsingAfterRawSearchCallback();
+
+        $this->assertIsArray($rawResults);
+        $this->assertArrayHasKey('hits', $rawResults);
+        $this->assertArrayHasKey('processingTimeMs', $rawResults);
+    }
+
+    public function test_it_can_use_raw_paginated_search_with_after_raw_search_callback()
+    {
+        $rawResults = $this->itCanAccessRawSearchResultsOfPaginateRawUsingAfterRawSearchCallback();
+
+        $this->assertIsArray($rawResults);
+        $this->assertArrayHasKey('hits', $rawResults);
+        $this->assertArrayHasKey('processingTimeMs', $rawResults);
+    }
+
+    public function test_it_can_use_simple_paginated_search_with_after_raw_search_callback()
+    {
+        $rawResults = $this->itCanAccessRawSearchResultsOfSimplePaginateUsingAfterRawSearchCallback();
+
+        $this->assertIsArray($rawResults);
+        $this->assertArrayHasKey('hits', $rawResults);
+        $this->assertArrayHasKey('processingTimeMs', $rawResults);
+    }
+
+    public function test_it_can_use_raw_simple_paginated_search_with_after_raw_search_callback()
+    {
+        $rawResults = $this->itCanAccessRawSearchResultsOfSimplePaginateRawUsingAfterRawSearchCallback();
+
+        $this->assertIsArray($rawResults);
+        $this->assertArrayHasKey('hits', $rawResults);
+        $this->assertArrayHasKey('processingTimeMs', $rawResults);
+    }
+
+    public function test_it_can_use_raw_get_search_with_after_raw_search_callback()
+    {
+        $rawResults = $this->itCanAccessRawSearchResultsOfGetUsingAfterRawSearchCallback();
+
+        $this->assertIsArray($rawResults);
+        $this->assertArrayHasKey('hits', $rawResults);
+        $this->assertArrayHasKey('processingTimeMs', $rawResults);
+    }
+
+    public function test_it_can_use_raw_cursor_search_with_after_raw_search_callback()
+    {
+        $rawResults = $this->itCanAccessRawSearchResultsOfCursorUsingAfterRawSearchCallback();
+
+        $this->assertIsArray($rawResults);
+        $this->assertArrayHasKey('hits', $rawResults);
+        $this->assertArrayHasKey('processingTimeMs', $rawResults);
     }
 
     protected static function scoutDriver(): string

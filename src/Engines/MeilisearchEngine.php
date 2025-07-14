@@ -2,15 +2,19 @@
 
 namespace Laravel\Scout\Engines;
 
+use Illuminate\Support\Arr;
 use Illuminate\Support\LazyCollection;
 use Laravel\Scout\Builder;
+use Laravel\Scout\Contracts\UpdatesIndexSettings;
 use Laravel\Scout\Jobs\RemoveableScoutCollection;
 use Meilisearch\Client as MeilisearchClient;
 use Meilisearch\Contracts\IndexesQuery;
+use Meilisearch\Endpoints\Indexes;
+use Meilisearch\Exceptions\ApiException;
 use Meilisearch\Meilisearch;
 use Meilisearch\Search\SearchResult;
 
-class MeilisearchEngine extends Engine
+class MeilisearchEngine extends Engine implements UpdatesIndexSettings
 {
     /**
      * The Meilisearch client.
@@ -29,7 +33,6 @@ class MeilisearchEngine extends Engine
     /**
      * Create a new MeilisearchEngine instance.
      *
-     * @param  \Meilisearch\Client  $meilisearch
      * @param  bool  $softDelete
      * @return void
      */
@@ -52,7 +55,6 @@ class MeilisearchEngine extends Engine
         if ($models->isEmpty()) {
             return;
         }
-
 
         if ($this->usesSoftDelete($models->first()) && $this->softDelete) {
             $models->each->pushSoftDeleteMetadata();
@@ -113,7 +115,7 @@ class MeilisearchEngine extends Engine
             return;
         }
 
-        $index = $this->meilisearch->index($models->first()->searchableAs());
+        $index = $this->meilisearch->index($models->first()->indexableAs());
 
         $keys = $models instanceof RemoveableScoutCollection
             ? $models->pluck($models->first()->getScoutKeyName())
@@ -158,8 +160,6 @@ class MeilisearchEngine extends Engine
     /**
      * Perform the given search on the engine.
      *
-     * @param  \Laravel\Scout\Builder  $builder
-     * @param  array  $searchParams
      * @return mixed
      */
     protected function performSearch(Builder $builder, array $searchParams = [])
@@ -196,7 +196,6 @@ class MeilisearchEngine extends Engine
     /**
      * Get the filter array for the query.
      *
-     * @param  \Laravel\Scout\Builder  $builder
      * @return string
      */
     protected function filters(Builder $builder)
@@ -204,6 +203,10 @@ class MeilisearchEngine extends Engine
         $filters = collect($builder->wheres)->map(function ($value, $key) {
             if (is_bool($value)) {
                 return sprintf('%s=%s', $key, $value ? 'true' : 'false');
+            }
+
+            if (is_null($value)) {
+                return sprintf('%s %s', $key, 'IS NULL');
             }
 
             return is_numeric($value)
@@ -237,9 +240,6 @@ class MeilisearchEngine extends Engine
 
     /**
      * Get the sort array for the query.
-     *
-     * @param  \Laravel\Scout\Builder  $builder
-     * @return array
      */
     protected function buildSortFromOrderByClauses(Builder $builder): array
     {
@@ -258,7 +258,7 @@ class MeilisearchEngine extends Engine
      */
     public function mapIds($results)
     {
-        if (0 === count($results['hits'])) {
+        if (count($results['hits']) === 0) {
             return collect();
         }
 
@@ -286,7 +286,6 @@ class MeilisearchEngine extends Engine
     /**
      * Get the results of the query as a Collection of primary keys.
      *
-     * @param  \Laravel\Scout\Builder  $builder
      * @return \Illuminate\Support\Collection
      */
     public function keys(Builder $builder)
@@ -299,14 +298,13 @@ class MeilisearchEngine extends Engine
     /**
      * Map the given results to instances of the given model.
      *
-     * @param  \Laravel\Scout\Builder  $builder
      * @param  mixed  $results
      * @param  \Illuminate\Database\Eloquent\Model  $model
      * @return \Illuminate\Database\Eloquent\Collection
      */
     public function map(Builder $builder, $results, $model)
     {
-        if (is_null($results) || 0 === count($results['hits'])) {
+        if (is_null($results) || count($results['hits']) === 0) {
             return $model->newCollection();
         }
 
@@ -337,7 +335,6 @@ class MeilisearchEngine extends Engine
     /**
      * Map the given results to instances of the given model via a lazy collection.
      *
-     * @param  \Laravel\Scout\Builder  $builder
      * @param  mixed  $results
      * @param  \Illuminate\Database\Eloquent\Model  $model
      * @return \Illuminate\Support\LazyCollection
@@ -379,7 +376,7 @@ class MeilisearchEngine extends Engine
      */
     public function getTotalCount($results)
     {
-        return $results['totalHits'];
+        return $results['totalHits'] ?? $results['estimatedTotalHits'];
     }
 
     /**
@@ -390,7 +387,7 @@ class MeilisearchEngine extends Engine
      */
     public function flush($model)
     {
-        $index = $this->meilisearch->index($model->searchableAs());
+        $index = $this->meilisearch->index($model->indexableAs());
 
         $index->deleteAllDocuments();
     }
@@ -399,28 +396,51 @@ class MeilisearchEngine extends Engine
      * Create a search index.
      *
      * @param  string  $name
-     * @param  array  $options
      * @return mixed
      *
      * @throws \Meilisearch\Exceptions\ApiException
      */
     public function createIndex($name, array $options = [])
     {
+        try {
+            $index = $this->meilisearch->getIndex($name);
+        } catch (ApiException $e) {
+            $index = null;
+        }
+
+        if ($index?->getUid() !== null) {
+            return $index;
+        }
+
         return $this->meilisearch->createIndex($name, $options);
     }
 
     /**
-     * Update an index's settings.
+     * Update the index settings for the given index.
      *
-     * @param  string  $name
-     * @param  array  $options
-     * @return array
-     *
-     * @throws \Meilisearch\Exceptions\ApiException
+     * @return void
      */
-    public function updateIndexSettings($name, array $options = [])
+    public function updateIndexSettings($name, array $settings = [])
     {
-        return $this->meilisearch->index($name)->updateSettings($options);
+        $index = $this->meilisearch->index($name);
+
+        $index->updateSettings(Arr::except($settings, 'embedders'));
+
+        if (! empty($settings['embedders'])) {
+            $index->updateEmbedders($settings['embedders']);
+        }
+    }
+
+    /**
+     * Configure the soft delete filter within the given settings.
+     *
+     * @return array
+     */
+    public function configureSoftDeleteFilter(array $settings = [])
+    {
+        $settings['filterableAttributes'][] = '__soft_deleted';
+
+        return $settings;
     }
 
     /**
