@@ -1,6 +1,88 @@
 # Release Notes
 
-## [Unreleased](https://github.com/laravel/scout/compare/v9.4.9...9.x)
+## [Unreleased](https://github.com/laravel/scout/compare/v9.8.1...9.x)
+
+## [v9.8.1](https://github.com/laravel/scout/compare/v9.8.0...v9.8.1) - 2023-02-14
+
+### Changed
+
+- Adds types to `makeAllSearchableUsing` by @nunomaduro in https://github.com/laravel/scout/pull/660
+
+## [v9.8.0](https://github.com/laravel/scout/compare/v9.7.2...v9.8.0) - 2023-01-17
+
+### Added
+
+- Laravel v10 Support by @driesvints in https://github.com/laravel/scout/pull/696
+- Enable order by for `collection` & `database` engines by @stein-j in https://github.com/laravel/scout/pull/695
+
+## [v9.7.2](https://github.com/laravel/scout/compare/v9.7.1...v9.7.2) - 2023-01-09
+
+### Fixed
+
+- Handle non-consecutive key collection on MeiliSearch document deletion by @pyrou in https://github.com/laravel/scout/pull/688
+- Fix missing variable in closure by @driesvints in https://github.com/laravel/scout/pull/694
+
+## [v9.7.1](https://github.com/laravel/scout/compare/v9.7.0...v9.7.1) - 2023-01-06
+
+### Fixed
+
+- Make scout compatible with new meilisearch casing by @mmachatschek in https://github.com/laravel/scout/pull/687
+
+## [v9.7.0](https://github.com/laravel/scout/compare/v9.6.2...v9.7.0) - 2023-01-03
+
+### Changed
+
+- Add analytics for Meilisearch engine by @mmachatschek in https://github.com/laravel/scout/pull/681
+- Allow options for search requests by @driesvints in https://github.com/laravel/scout/pull/683
+
+## [v9.6.2](https://github.com/laravel/scout/compare/v9.6.1...v9.6.2) - 2022-12-21
+
+### Fixed
+
+- Added a missing import by @driesvints in https://github.com/laravel/scout/commit/56adabcc1575a692824ffa8009719b20e7778f28
+
+## [v9.6.1](https://github.com/laravel/scout/compare/v9.6.0...v9.6.1) - 2022-12-20
+
+### Changed
+
+- Allow FQCN to delete-index command by @kichetof in https://github.com/laravel/scout/pull/677
+
+## [v9.6.0](https://github.com/laravel/scout/compare/v9.5.1...v9.6.0) - 2022-12-15
+
+### Added
+
+- Add command delete-all-indexes, update scout:index to allow FQCN and apply filterable on SoftDeletes by @kichetof in https://github.com/laravel/scout/pull/671
+- Added soft deleted to Meilisearch by @kichetof in https://github.com/laravel/scout/pull/672
+
+## [v9.5.1](https://github.com/laravel/scout/compare/v9.5.0...v9.5.1) - 2022-12-08
+
+### Fixed
+
+- Fix the sync index settings command not using the scout prefix by @tonysm in https://github.com/laravel/scout/pull/670
+
+## [v9.5.0](https://github.com/laravel/scout/compare/v9.4.12...v9.5.0) - 2022-12-06
+
+### Added
+
+- Support Meilisearch index settings by @driesvints in https://github.com/laravel/scout/pull/669
+
+## [v9.4.12](https://github.com/laravel/scout/compare/v9.4.11...v9.4.12) - 2022-10-04
+
+### Fixed
+
+- Fix custom scout keys not being utilized when deleting from queue by @stevebauman in https://github.com/laravel/scout/pull/656
+
+## [v9.4.11](https://github.com/laravel/scout/compare/v9.4.10...v9.4.11) - 2022-09-27
+
+### Fixed
+
+- Use scout key when mapping keys from search results by @flexchar in https://github.com/laravel/scout/pull/652
+
+## [v9.4.10](https://github.com/laravel/scout/compare/v9.4.9...v9.4.10) - 2022-07-19
+
+### Fixed
+
+- Return collection by @driesvints in https://github.com/laravel/scout/pull/635
 
 ## [v9.4.9](https://github.com/laravel/scout/compare/v9.4.8...v9.4.9) - 2022-05-05
 

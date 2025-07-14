@@ -2,8 +2,10 @@
 
 namespace Laravel\Scout;
 
+use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Collection as BaseCollection;
+use Illuminate\Support\Str;
 
 trait Searchable
 {
@@ -140,6 +142,17 @@ trait Searchable
             })
             ->orderBy($self->getKeyName())
             ->searchable($chunk);
+    }
+
+    /**
+     * Modify the query used to retrieve models when making all of the models searchable.
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    protected function makeAllSearchableUsing(EloquentBuilder $query)
+    {
+        return $query;
     }
 
     /**
@@ -366,15 +379,13 @@ trait Searchable
     }
 
     /**
-     * Modify the query used to retrieve models when making all of the models searchable.
+     * Get the unqualified Scout key name.
      *
-     * @param  \Illuminate\Database\Eloquent\Builder  $query
-     *
-     * @return \Illuminate\Database\Eloquent\Builder
+     * @return string
      */
-    protected function makeAllSearchableUsing($query)
+    public function getUnqualifiedScoutKeyName()
     {
-        return $query;
+        return Str::afterLast($this->getScoutKeyName(), '.');
     }
 
     /**
