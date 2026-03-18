@@ -234,7 +234,7 @@ class MeilisearchEngine extends Engine implements UpdatesIndexSettings
     protected function buildSortFromOrderByClauses(Builder $builder): array
     {
         return collect($builder->orders)
-            ->map(fn (array $order) => $order['column'].':'.$order['direction'])
+            ->map(fn(array $order) => $order['column'] . ':' . $order['direction'])
             ->toArray();
     }
 
@@ -303,7 +303,7 @@ class MeilisearchEngine extends Engine implements UpdatesIndexSettings
         $objectIdPositions = array_flip($objectIds);
 
         return $model->getScoutModelsByIds($builder, $objectIds)
-            ->filter(fn ($model) => in_array($model->getScoutKey(), $objectIds))
+            ->filter(fn($model) => in_array($model->getScoutKey(), $objectIds))
             ->map(function ($model) use ($results, $objectIdPositions) {
                 $result = $results['hits'][$objectIdPositions[$model->getScoutKey()]] ?? [];
 
@@ -315,7 +315,7 @@ class MeilisearchEngine extends Engine implements UpdatesIndexSettings
 
                 return $model;
             })
-            ->sortBy(fn ($model) => $objectIdPositions[$model->getScoutKey()])
+            ->sortBy(fn($model) => $objectIdPositions[$model->getScoutKey()])
             ->values();
     }
 
@@ -337,7 +337,7 @@ class MeilisearchEngine extends Engine implements UpdatesIndexSettings
 
         return $model->queryScoutModelsByIds($builder, $objectIds)
             ->cursor()
-            ->filter(fn ($model) => in_array($model->getScoutKey(), $objectIds))
+            ->filter(fn($model) => in_array($model->getScoutKey(), $objectIds))
             ->map(function ($model) use ($results, $objectIdPositions) {
                 $result = $results['hits'][$objectIdPositions[$model->getScoutKey()]] ?? [];
 
@@ -349,7 +349,7 @@ class MeilisearchEngine extends Engine implements UpdatesIndexSettings
 
                 return $model;
             })
-            ->sortBy(fn ($model) => $objectIdPositions[$model->getScoutKey()])
+            ->sortBy(fn($model) => $objectIdPositions[$model->getScoutKey()])
             ->values();
     }
 
@@ -451,7 +451,7 @@ class MeilisearchEngine extends Engine implements UpdatesIndexSettings
         $tasks = [];
         $limit = 1000000;
 
-        $query = new IndexesQuery;
+        $query = new IndexesQuery();
         $query->setLimit($limit);
 
         $indexes = $this->meilisearch->getIndexes($query);
